@@ -13,19 +13,21 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     postgresql-client \
     libjpeg-dev \
-    libz-dev \
+    zlib1g-dev \
     libfreetype6-dev \
     liblcms2-dev \
     libwebp-dev \
-    libtiff-dev \
-    libraqm-dev \
+    libtiff5-dev \
+    libopenjp2-7-dev \
+    pkg-config \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements from backend
 COPY backend/requirements.txt* ./
-RUN pip install --upgrade pip && \
-    if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+# Upgrade installer tools first (helps build wheels like Pillow)
+RUN pip install --upgrade pip setuptools wheel && \
+    if [ -f requirements.txt ]; then pip install --no-cache-dir -r requirements.txt; fi
 
 # Copy backend code
 COPY backend/ ./
