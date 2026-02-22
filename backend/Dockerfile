@@ -1,37 +1,45 @@
 FROM python:3.11-slim
+FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PORT=8000
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y build-essential gcc libpq-dev --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY ./backend/pyproject.toml ./backend/requirements.txt* /app/
-RUN pip install --upgrade pip
-RUN if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
-FROM python:3.11-slim
-
-# Instalar dependencias del sistema necesarias para Pillow
+# Install system dependencies (Pillow build deps + DB client)
 RUN apt-get update && apt-get install -y \
     build-essential \
     gcc \
+    libpq-dev \
+    postgresql-client \
     libjpeg-dev \
     zlib1g-dev \
+    libfreetype6-dev \
+    liblcms2-dev \
+    libwebp-dev \
+    libtiff5-dev \
+    libopenjp2-7-dev \
+    pkg-config \
+    --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+# Copy backend requirements and upgrade installer tools
+COPY backend/requirements.txt ./requirements.txt
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt
 
-COPY requirements.txt .
+# Copy backend source
+COPY backend/ ./
 
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
+# Create static dir for images
+RUN mkdir -p app/static/images
 
-COPY . .
+# Create non-root user and switch
+RUN addgroup --system app && adduser --system --ingroup app app
+USER app
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-COPY app/ ./app/
+# Run migrations if DATABASE_URL set, then start
+CMD ["/bin/bash", "-c", "if [ -n \"$DATABASE_URL\" ]; then alembic upgrade head || true; fi && exec uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers"]
