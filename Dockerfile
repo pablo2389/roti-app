@@ -1,0 +1,36 @@
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PORT=8000
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    libpq-dev \
+    postgresql-client \
+    --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements from backend
+COPY backend/requirements.txt* ./
+RUN pip install --upgrade pip && \
+    if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+# Copy backend code
+COPY backend/ ./
+
+# Create static directory for images
+RUN mkdir -p app/static/images
+
+# Create non-root user
+RUN addgroup --system app && adduser --system --ingroup app app
+USER app
+
+EXPOSE 8000
+
+# Run migrations and start app
+CMD ["/bin/bash", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers"]

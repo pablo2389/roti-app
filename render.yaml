@@ -2,10 +2,10 @@ services:
   - type: web
     name: rotiseria-backend
     env: docker
-    dockerfilePath: backend/Dockerfile
+    dockerfilePath: ./Dockerfile
     plan: starter
     buildCommand: ''
-    startCommand: '/app/entrypoint.sh'
+    startCommand: ''
     envVars:
       - key: DATABASE_URL
         value: ${DATABASE_URL}
@@ -15,3 +15,4 @@ services:
         value: 8000
     healthCheckPath: /docs
     internalPort: 8000
+    autoDeploy: true
