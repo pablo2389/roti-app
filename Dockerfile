@@ -6,12 +6,19 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies (including Pillow build deps)
 RUN apt-get update && apt-get install -y \
     build-essential \
     gcc \
     libpq-dev \
     postgresql-client \
+    libjpeg-dev \
+    libz-dev \
+    libfreetype6-dev \
+    liblcms2-dev \
+    libwebp-dev \
+    libtiff-dev \
+    libraqm-dev \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
