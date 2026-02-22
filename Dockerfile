@@ -32,5 +32,5 @@ USER app
 
 EXPOSE 8000
 
-# Run migrations and start app
-CMD ["/bin/bash", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers"]
+# Run migrations (if DATABASE_URL is set) then start app
+CMD ["/bin/bash", "-c", "if [ -n \"$DATABASE_URL\" ]; then alembic upgrade head || true; fi && exec uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers"]
