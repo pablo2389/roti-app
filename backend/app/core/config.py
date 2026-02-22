@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from pydantic import ConfigDict
+import os
 
 
 class Settings(BaseSettings):
@@ -14,3 +15,9 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# Allow platforms (Render) that provide DATABASE_URL to override the SQLALCHEMY URI
+db_url = os.getenv("DATABASE_URL")
+if db_url:
+    # Render/Heroku-style DATABASE_URL may be provided; prefer it when present
+    settings.SQLALCHEMY_DATABASE_URI = db_url
