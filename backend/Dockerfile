@@ -24,6 +24,9 @@ RUN apt-get update && apt-get install -y \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
+# Create non-root user early so we can chown files after copying
+RUN addgroup --system app && adduser --system --ingroup app app
+
 # Copy backend requirements and upgrade installer tools
 COPY backend/requirements.txt ./requirements.txt
 RUN pip install --upgrade pip setuptools wheel && \
@@ -32,11 +35,9 @@ RUN pip install --upgrade pip setuptools wheel && \
 # Copy backend source
 COPY backend/ ./
 
-# Create static dir for images
-RUN mkdir -p app/static/images
+# Ensure app directory is writable by non-root user
+RUN chown -R app:app /app && mkdir -p /app/app/static/images && chown -R app:app /app/app/static/images
 
-# Create non-root user and switch
-RUN addgroup --system app && adduser --system --ingroup app app
 USER app
 
 EXPOSE 8000
