@@ -6,7 +6,7 @@ import os
 
 
 def create_product(db: Session, product: ProductoCreate, imagen_path: str | None = None, business_id: str | None = None) -> Producto:
-    payload = product.model_dump() if hasattr(product, 'model_dump') else product.dict()
+    payload = product.model_dump()
     db_product = Producto(**payload)
     if imagen_path:
         db_product.imagen_path = imagen_path
@@ -39,7 +39,7 @@ def update_product(db: Session, product_id: int, data: ProductoUpdate, imagen_pa
     db_product = q.first()
     if not db_product:
         return None
-    payload = data.model_dump() if hasattr(data, 'model_dump') else data.dict()
+    payload = data.model_dump()
     for k, v in payload.items():
         setattr(db_product, k, v)
     if imagen_path:

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import datetime
 
@@ -20,9 +20,8 @@ class ProductoUpdate(ProductoBase):
 
 
 class ProductoOut(ProductoBase):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: int
     imagen_path: Optional[str] = None
     fecha_creacion: Optional[datetime]
-
-    class Config:
-        orm_mode = True
